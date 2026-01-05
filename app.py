@@ -159,13 +159,17 @@ def main():
         st.stop()
 
     # Investment handling
-    # Fetch latest live price directly for display/sell actions; fall back to pipeline price.
+    # Fetch latest live price directly for display/sell actions; fall back to freshest pipeline price.
     live_quote = latest_quote(ticker)
-    current_price = (
-        float(live_quote["close"])
-        if live_quote is not None and "close" in live_quote
-        else result["latest_price"]
-    )
+    latest_series_price = None
+    if result.get("minute_prices") is not None and len(result["minute_prices"]) > 0:
+        latest_series_price = float(result["minute_prices"].iloc[-1])
+    if live_quote is not None and "close" in live_quote:
+        current_price = float(live_quote["close"])
+    elif latest_series_price is not None:
+        current_price = latest_series_price
+    else:
+        current_price = result["latest_price"]
     st.session_state["live_price"] = current_price
     result["latest_price"] = current_price
 
