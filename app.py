@@ -123,6 +123,7 @@ def main():
                 train_window=train_window or None,
                 minute_horizon=minute_horizon,
                 long_horizon_steps=long_horizon_steps,
+                artifact_dir=None,
             )
         elif refresh:
             result = fetch_pipeline(

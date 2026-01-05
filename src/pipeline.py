@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
@@ -46,7 +47,7 @@ def run_pipeline(
     intraday_days: int = 7,
     minute_horizon: int = 1,
     long_horizon_steps: int = 9,  # defaults to ~45 minutes on 5m bars
-    artifact_dir: str = "artifacts",
+    artifact_dir: Optional[str] = None,
     invest_amount: Optional[float] = None,
     force_retrain: bool = False,
     max_points: Optional[int] = 50000,
@@ -58,7 +59,13 @@ def run_pipeline(
 
     Returns a dictionary with predictions, metrics, and portfolio state.
     """
-    artifact_root = Path(artifact_dir)
+    use_cache = os.getenv("DISABLE_CACHE", "0") != "1"
+    artifact_base = (
+        artifact_dir
+        if artifact_dir is not None
+        else os.getenv("ARTIFACT_DIR", "/tmp" if os.getenv("STREAMLIT_SERVER_ENABLED") else "artifacts")
+    )
+    artifact_root = Path(artifact_base)
     cache_path = artifact_root / f"{ticker}_history.csv"
 
     intraday_data = fetch_intraday_history(
@@ -69,7 +76,7 @@ def run_pipeline(
         if not intraday_data.empty
         else combined_price_history(ticker=ticker, intraday_days=intraday_days, max_points=max_points)
     )
-    if data.empty:
+    if data.empty and use_cache:
         # Try cached history if network is unavailable.
         data = load_cached_history(cache_path)
     if data.empty:
@@ -88,8 +95,12 @@ def run_pipeline(
 
     historical_prices = data["close"].copy()
 
-    # Persist latest pull for offline reuse.
-    save_history(data, cache_path)
+    # Persist latest pull for offline reuse (ignore if not allowed).
+    if use_cache:
+        try:
+            save_history(data, cache_path)
+        except Exception:
+            pass
 
     minute_model_path = artifact_root / f"{ticker}_minute.joblib"
     hour_model_path = artifact_root / f"{ticker}_hour.joblib"
