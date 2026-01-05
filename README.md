@@ -307,7 +307,3 @@ python main.py \
 43) License and usage
 - This repo is for educational/demonstration purposes; no warranties.
 - Adapt and extend at your own risk; crypto markets are volatile.
-
-44) Live app recap
-- URL: https://time-series-analysis-btc-forecasting.streamlit.app/
-- Same codebase; refresh interval and signals as documented above.
