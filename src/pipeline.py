@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from datetime import datetime, timedelta
 from typing import Optional
 
 import pandas as pd
@@ -75,6 +76,14 @@ def run_pipeline(
         raise ValueError(
             "No price data available. Check internet connectivity, reduce intraday_days, "
             "or try a different ticker."
+        )
+
+    # Reject stale data (>60 minutes old) to avoid flat prices.
+    latest_ts = data.index.max()
+    if latest_ts is None or latest_ts < datetime.utcnow() - timedelta(minutes=60):
+        raise ValueError(
+            f"Data is stale (latest timestamp {latest_ts}); ensure network access and delete stale cache "
+            f"at {cache_path} before retrying."
         )
 
     historical_prices = data["close"].copy()
