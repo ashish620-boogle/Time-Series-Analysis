@@ -43,15 +43,9 @@ def render_metrics(result: dict):
     col2.metric("Next minute forecast", f"${result['next_minute_price']:.2f}")
     col3.metric("~45m forecast", f"${result['next_hour_price']:.2f}")
 
-    col4, col5, col6 = st.columns(3)
+    col4, col5 = st.columns(2)
     col4.metric("Minute MAE (tail)", f"{result['minute_mae']:.4f}")
-    col5.metric("Minute RMSE (tail)", f"{result['minute_rmse']:.4f}")
-    col6.metric("Minute R² (tail)", f"{result['minute_r2']:.4f}")
-
-    col7, col8, col9 = st.columns(3)
-    col7.metric("Hour MAE (tail)", f"{result['hour_mae']:.4f}")
-    col8.metric("Hour RMSE (tail)", f"{result['hour_rmse']:.4f}")
-    col9.metric("Hour R² (tail)", f"{result['hour_r2']:.4f}")
+    col5.metric("Hour MAE (tail)", f"{result['hour_mae']:.4f}")
 
 
 def render_portfolio(portfolio: dict, invest_amount: float, latest_price: float):
@@ -102,10 +96,10 @@ def main():
             step=100.0,
         )
         max_points = st.number_input(
-            "Max data points to fetch", min_value=1000, max_value=100000, value=50000, step=1000
+            "Max data points to fetch", min_value=1000, max_value=10000000, value=50000, step=1000
         )
         train_window = st.number_input(
-            "Training window (rows, optional)", min_value=0, max_value=100000, value=0, step=1000
+            "Training window (rows, optional)", min_value=0, max_value=10000000, value=0, step=1000
         )
         minute_horizon = st.number_input(
             "Minute horizon (steps)", min_value=1, max_value=60, value=1, step=1
@@ -172,6 +166,15 @@ def main():
         current_price = result["latest_price"]
     st.session_state["live_price"] = current_price
     result["latest_price"] = current_price
+    # DEBUG logging: current price and minute_prices stats
+    if result.get("minute_prices") is not None:
+        ts_index = result["minute_prices"].index
+        latest_ts = ts_index[-1] if len(ts_index) else None
+        st.write(
+            f"[DEBUG] current_price={current_price}, minute_prices_len={len(result['minute_prices'])}, latest_ts={latest_ts}"
+        )
+    else:
+        st.write(f"[DEBUG] current_price={current_price}, minute_prices_len=0")
 
     if set_investment and invest_amount > 0:
         units = invest_amount / current_price
