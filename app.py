@@ -167,15 +167,15 @@ def main():
         current_price = result["latest_price"]
     st.session_state["live_price"] = current_price
     result["latest_price"] = current_price
-    # DEBUG logging: current price and minute_prices stats
-    if result.get("minute_prices") is not None:
-        ts_index = result["minute_prices"].index
-        latest_ts = ts_index[-1] if len(ts_index) else None
-        st.write(
-            f"[DEBUG] current_price={current_price}, minute_prices_len={len(result['minute_prices'])}, latest_ts={latest_ts}"
-        )
-    else:
-        st.write(f"[DEBUG] current_price={current_price}, minute_prices_len=0")
+    # # DEBUG logging: current price and minute_prices stats
+    # if result.get("minute_prices") is not None:
+    #     ts_index = result["minute_prices"].index
+    #     latest_ts = ts_index[-1] if len(ts_index) else None
+    #     st.write(
+    #         f"[DEBUG] current_price={current_price}, minute_prices_len={len(result['minute_prices'])}, latest_ts={latest_ts}"
+    #     )
+    # else:
+    #     st.write(f"[DEBUG] current_price={current_price}, minute_prices_len=0")
 
     if set_investment and invest_amount > 0:
         units = invest_amount / current_price
