@@ -70,7 +70,11 @@ def load_model(path: Path) -> Optional[Pipeline]:
     """Load a model if it exists."""
     if not path.exists():
         return None
-    return joblib.load(path)
+    try:
+        return joblib.load(path)
+    except Exception:
+        # If the model was saved with incompatible numpy/sklearn versions, force retrain.
+        return None
 
 
 def train_and_evaluate(
