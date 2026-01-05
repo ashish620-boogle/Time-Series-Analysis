@@ -1,5 +1,4 @@
 # Bitcoin Price Forecasting & Live Mark-to-Market Demo
-Live app: https://time-series-analysis-btc-forecasting.streamlit.app/
 
 01) What this project is
 - A complete, runnable system that fetches live BTC-USD data, engineers features, trains short- and medium-horizon forecasters, and serves an interactive Streamlit UI with live mark-to-market profit tracking and simple buy/sell cues.
