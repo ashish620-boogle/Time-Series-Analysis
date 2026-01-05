@@ -16,6 +16,7 @@ from .data_fetch import (
 from .models import load_model, predict, save_model, train_and_evaluate
 from .preprocess import build_supervised, temporal_train_val_split
 from .trading import simulate_trades
+from sklearn.metrics import r2_score, mean_squared_error
 
 
 def _train_or_load(
@@ -109,6 +110,17 @@ def run_pipeline(
         minute_mae = float(
             (minute_predictions.tail(tail_n) - minute_target.tail(tail_n)).abs().mean()
         )
+        minute_mse_val = float(
+            mean_squared_error(minute_target.tail(tail_n), minute_predictions.tail(tail_n))
+        )
+        minute_rmse_val = float(minute_mse_val**0.5)
+        minute_r2_val = float(
+            r2_score(minute_target.tail(tail_n), minute_predictions.tail(tail_n))
+        )
+    else:
+        minute_mse_val = float("nan")
+        minute_rmse_val = float("nan")
+        minute_r2_val = float("nan")
     minute_next_array = predict(minute_model, minute_latest)
     next_minute_price = (
         float(minute_next_array[0]) if minute_next_array.size else float("nan")
@@ -132,6 +144,17 @@ def run_pipeline(
         hour_mae = float(
             (hour_predictions.tail(tail_n) - hour_target.tail(tail_n)).abs().mean()
         )
+        hour_mse_val = float(
+            mean_squared_error(hour_target.tail(tail_n), hour_predictions.tail(tail_n))
+        )
+        hour_rmse_val = float(hour_mse_val**0.5)
+        hour_r2_val = float(
+            r2_score(hour_target.tail(tail_n), hour_predictions.tail(tail_n))
+        )
+    else:
+        hour_mse_val = float("nan")
+        hour_rmse_val = float("nan")
+        hour_r2_val = float("nan")
     hour_next_array = predict(hour_model, hour_latest)
     next_hour_price = float(hour_next_array[0]) if hour_next_array.size else float("nan")
 
@@ -175,7 +198,13 @@ def run_pipeline(
         "next_minute_price": next_minute_price,
         "next_hour_price": next_hour_price,
         "minute_mae": minute_mae,
+        "minute_mse": minute_mse_val,
+        "minute_rmse": minute_rmse_val,
+        "minute_r2": minute_r2_val,
         "hour_mae": hour_mae,
+        "hour_mse": hour_mse_val,
+        "hour_rmse": hour_rmse_val,
+        "hour_r2": hour_r2_val,
         "minute_model_path": str(minute_model_path),
         "hour_model_path": str(hour_model_path),
         "minute_trained": minute_trained,
