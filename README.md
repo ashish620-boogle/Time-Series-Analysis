@@ -2,7 +2,7 @@
 
 Market Pulse is a full-stack time-series forecasting and trading-simulation project focused on short-horizon crypto price prediction. It combines real-time market data ingestion, feature engineering, supervised ML models, and a live dashboard that streams updates over WebSockets.
 
-Live deployment (frontend): https://hftsystem.netlify.app/
+Live deployment: https://hftsystem.netlify.app/
 
 ---
 
@@ -35,7 +35,7 @@ Features are lightweight but predictive for short-term dynamics:
 - **Range fraction**: intrabar volatility proxy.
 - **Volume stats**: liquidity/pressure hints (mean/std/EMA).
 
-The goal is interpretability and speed — not deep sequence modeling.
+The goal is interpretability and speed â€” not deep sequence modeling.
 
 ### 3) Model choice: tree boosting
 We use `HistGradientBoostingRegressor` (scikit-learn) because:
@@ -98,10 +98,10 @@ uvicorn backend.main:app --reload
 ---
 
 ## Project structure (high-level)
-- `src/` — data ingestion, preprocessing, modeling, trading logic.
-- `backend/` — FastAPI API + WebSocket server.
-- `static/` — dashboard UI (Plotly + WebSocket client).
-- `artifacts/` — cached models/data (ignored in git).
+- `src/` â€” data ingestion, preprocessing, modeling, trading logic.
+- `backend/` â€” FastAPI API + WebSocket server.
+- `static/` â€” dashboard UI (Plotly + WebSocket client).
+- `artifacts/` â€” cached models/data (ignored in git).
 
 ---
 
