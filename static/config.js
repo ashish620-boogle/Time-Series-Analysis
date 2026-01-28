@@ -1,1 +1,1 @@
-window.BACKEND_URL = "https://high-frequency-trading-system.onrender.com/";
+window.BACKEND_URL = "https://high-frequency-trading-system.onrender.com";
