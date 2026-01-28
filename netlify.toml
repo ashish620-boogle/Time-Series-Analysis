@@ -1,3 +1,4 @@
 [build]
-  publish = "static"
+  base = "static"
+  publish = "."
   command = "echo \"skip build\""
