@@ -36,6 +36,20 @@ def _binance_symbol(ticker: str) -> str:
     return symbol.upper()
 
 
+def _coinbase_product(ticker: str) -> str:
+    """Map a generic ticker like BTC-USD to Coinbase product (BTC-USD)."""
+    parts = ticker.replace("_", "-").upper().split("-")
+    if len(parts) >= 2:
+        base = parts[0]
+        quote = parts[1]
+    else:
+        base = ticker.replace("-", "").upper()
+        quote = "USD"
+    if quote == "USDT":
+        quote = "USD"
+    return f"{base}-{quote}"
+
+
 def _fetch_binance_klines(symbol: str, interval: str, start_ms: int, end_ms: int):
     """Fetch klines chunk from Binance."""
     url = "https://api.binance.com/api/v3/klines"
@@ -80,6 +94,40 @@ def _klines_to_df(klines) -> pd.DataFrame:
     return df[["open", "high", "low", "close", "volume"]]
 
 
+def _fetch_coinbase_candles(
+    product_id: str, granularity: int, start_iso: str, end_iso: str
+):
+    """Fetch candles chunk from Coinbase Exchange."""
+    url = f"https://api.exchange.coinbase.com/products/{product_id}/candles"
+    params = {"granularity": granularity, "start": start_iso, "end": end_iso}
+    try:
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+    except requests.RequestException:
+        return []
+
+
+def _coinbase_candles_to_df(candles) -> pd.DataFrame:
+    """Convert Coinbase candle payload to DataFrame."""
+    if not candles:
+        return pd.DataFrame()
+    # Coinbase format: [time, low, high, open, close, volume]
+    df = pd.DataFrame(candles, columns=["time", "low", "high", "open", "close", "volume"])
+    df[["open", "high", "low", "close", "volume"]] = df[
+        ["open", "high", "low", "close", "volume"]
+    ].astype(float)
+    df["time"] = pd.to_datetime(df["time"], unit="s", utc=True)
+    df = df.set_index("time").sort_index()
+    return df[["open", "high", "low", "close", "volume"]]
+
+
+def _coinbase_granularity(interval: str) -> int:
+    """Map interval string to Coinbase granularity seconds."""
+    mapping = {"1m": 60, "5m": 300, "1h": 3600}
+    return mapping.get(interval, 60)
+
+
 def fetch_intraday_history(
     ticker: str = "BTC-USD",
     lookback_days: int = 2,
@@ -111,7 +159,29 @@ def fetch_intraday_history(
             break
 
     if not frames:
-        return pd.DataFrame()
+        # Fallback to Coinbase if Binance is unavailable.
+        product_id = _coinbase_product(ticker)
+        granularity = _coinbase_granularity(interval)
+        end_time = datetime.now(timezone.utc)
+        start_time = end_time - timedelta(days=lookback_days)
+        frames = []
+        cursor = start_time
+        # Coinbase limit ~300 candles per request
+        step = timedelta(seconds=granularity * 300)
+        while cursor < end_time:
+            chunk_end = min(cursor + step, end_time)
+            candles = _fetch_coinbase_candles(
+                product_id,
+                granularity,
+                cursor.isoformat(),
+                chunk_end.isoformat(),
+            )
+            df_chunk = _coinbase_candles_to_df(candles)
+            if not df_chunk.empty:
+                frames.append(df_chunk)
+            cursor = chunk_end
+        if not frames:
+            return pd.DataFrame()
     df = pd.concat(frames)
     if max_points:
         df = df.tail(max_points)
@@ -137,7 +207,28 @@ def fetch_daily_history(ticker: str = "BTC-USD", days: int = 365) -> pd.DataFram
             break
 
     if not frames:
-        return pd.DataFrame()
+        # Fallback to Coinbase 1h candles.
+        product_id = _coinbase_product(ticker)
+        granularity = _coinbase_granularity("1h")
+        end_time = datetime.now(timezone.utc)
+        start_time = end_time - timedelta(days=days)
+        frames = []
+        cursor = start_time
+        step = timedelta(seconds=granularity * 300)
+        while cursor < end_time:
+            chunk_end = min(cursor + step, end_time)
+            candles = _fetch_coinbase_candles(
+                product_id,
+                granularity,
+                cursor.isoformat(),
+                chunk_end.isoformat(),
+            )
+            df_chunk = _coinbase_candles_to_df(candles)
+            if not df_chunk.empty:
+                frames.append(df_chunk)
+            cursor = chunk_end
+        if not frames:
+            return pd.DataFrame()
     df = pd.concat(frames)
     return _normalize(df)
 
