@@ -159,9 +159,6 @@
 - Chart cutoff stored once per session (default last 8 hours from initial max timestamp) to avoid shifting windows.
 - Y-axis uses tight margin (±2%) around observed values for clarity; fallback to auto-scale if no values.
 
-20) Live deployment
-- Streamlit Cloud: https://time-series-analysis-btc-forecasting.streamlit.app/
-- Uses the same codebase; ensure network access for live Binance data.
 
 21) How to run (app)
 1) Install deps:
