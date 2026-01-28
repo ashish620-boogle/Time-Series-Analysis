@@ -311,3 +311,46 @@ python main.py \
 44) Live app recap
 - URL: https://time-series-analysis-btc-forecasting.streamlit.app/
 - Same codebase; refresh interval and signals as documented above.
+45) FastAPI Dashboard (new architecture)
+- FastAPI backend manages market updates, predictions, trade simulation, and WebSocket streaming.
+- Frontend dashboard (Plotly) is served from `/static` and updates in real time.
+- Redis is optional; if `REDIS_URL` is unset, the app falls back to in-memory cache.
+
+How to run (FastAPI + dashboard)
+1) Install deps:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2) Optional: start Redis locally and set `REDIS_URL`, e.g. `redis://localhost:6379/0`.
+3) Run the backend:
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
+4) Open `http://localhost:8000` in a browser.
+
+46) Fly.io deployment (FastAPI dashboard)
+1) Install the Fly CLI: https://fly.io/docs/flyctl/install/
+2) Login:
+   ```bash
+   fly auth login
+   ```
+3) Edit `fly.toml` and set `app` to a unique name (or run `fly launch --no-deploy` to generate it).
+4) Deploy:
+   ```bash
+   fly deploy
+   ```
+5) Open `https://<your-app>.fly.dev`.
+
+Optional Redis:
+- Set a Redis URL via `fly secrets set REDIS_URL=redis://...` and redeploy.
+47) Netlify frontend + Railway backend
+- Deploy the FastAPI app to Railway (backend). Note the public URL (e.g. https://your-app.railway.app).
+- Set allowed CORS origins on the backend (optional): set `CORS_ORIGINS` to your Netlify site URL.
+
+Netlify steps (frontend only)
+1) Set the backend URL in `static/config.js` before deploying:
+   ```js
+   window.BACKEND_URL = "https://your-app.railway.app";
+   ```
+2) Deploy to Netlify using the `static` folder as the publish directory.
+3) Open the Netlify URL; the dashboard will connect to Railway for `/api` and `/ws`.

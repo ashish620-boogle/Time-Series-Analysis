@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Pulse Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Live Forecast + Trading Engine</p>
+        <h1>Market Pulse</h1>
+        <p class="sub">Fast, streaming crypto forecasts with Redis-backed caching and WebSocket updates.</p>
+      </div>
+      <div class="status">
+        <span id="connection-pill" class="status-pill">Connecting</span>
+        <span id="updated-at" class="timestamp">--</span>
+      </div>
+    </header>
+
+    <section class="metrics">
+      <div class="metric-card">
+        <span>Latest Price</span>
+        <strong id="metric-latest">$--</strong>
+        <small id="metric-ticker">--</small>
+      </div>
+      <div class="metric-card">
+        <span>Next Minute</span>
+        <strong id="metric-minute">$--</strong>
+        <small>Short horizon</small>
+      </div>
+      <div class="metric-card">
+        <span>Next ~45m</span>
+        <strong id="metric-hour">$--</strong>
+        <small>Long horizon</small>
+      </div>
+      <div class="metric-card">
+        <span>Minute MAE</span>
+        <strong id="metric-minute-mae">--</strong>
+        <small>Tail accuracy</small>
+      </div>
+      <div class="metric-card">
+        <span>Hour MAE</span>
+        <strong id="metric-hour-mae">--</strong>
+        <small>Tail accuracy</small>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="panel charts">
+        <div class="panel-header">
+          <h2>Price vs Prediction</h2>
+          <div class="signals">
+            <span id="signal-buy" class="signal buy">Buy</span>
+            <span id="signal-sell" class="signal sell">Sell</span>
+          </div>
+        </div>
+        <div id="price-chart" class="chart"></div>
+
+        <div class="panel-header">
+          <h2>Profit Curve</h2>
+          <div class="hint">Mark-to-market P&amp;L</div>
+        </div>
+        <div id="profit-chart" class="chart"></div>
+      </div>
+
+      <aside class="panel sidebar">
+        <div class="card control-card">
+          <h3>Controls</h3>
+          <div class="control-grid">
+            <label>
+              Ticker
+              <input id="input-ticker" type="text" placeholder="BTC-USD">
+            </label>
+            <label>
+              Intraday Days
+              <input id="input-intraday" type="number" min="1" step="1" placeholder="7">
+            </label>
+            <label>
+              Max Points
+              <input id="input-max-points" type="number" min="1000" step="1000" placeholder="50000">
+            </label>
+            <label>
+              Train Window
+              <input id="input-train-window" type="number" min="0" step="1000" placeholder="0">
+            </label>
+            <label>
+              Minute Horizon
+              <input id="input-minute-horizon" type="number" min="1" step="1" placeholder="1">
+            </label>
+            <label>
+              Long Horizon Steps
+              <input id="input-long-horizon" type="number" min="1" step="1" placeholder="9">
+            </label>
+            <label>
+              Invest Amount ($)
+              <input id="input-invest-amount" type="number" min="0" step="100" placeholder="1000">
+            </label>
+            <label class="toggle">
+              <input id="input-auto-trade" type="checkbox">
+              <span>Auto Trade</span>
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="btn-apply" class="btn primary">Apply Settings</button>
+            <button id="btn-retrain" class="btn ghost">Retrain</button>
+          </div>
+          <div class="button-row">
+            <button id="btn-buy" class="btn accent">Buy</button>
+            <button id="btn-sell" class="btn danger">Sell</button>
+          </div>
+          <p id="action-status" class="status-text">Ready.</p>
+        </div>
+
+        <div class="card portfolio-card">
+          <h3>Portfolio</h3>
+          <div class="portfolio-grid">
+            <div>
+              <span>Units</span>
+              <strong id="portfolio-units">0</strong>
+            </div>
+            <div>
+              <span>Invested</span>
+              <strong id="portfolio-invested">$0.00</strong>
+            </div>
+            <div>
+              <span>Value</span>
+              <strong id="portfolio-value">$0.00</strong>
+            </div>
+            <div>
+              <span>P&amp;L</span>
+              <strong id="portfolio-profit">$0.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="card events-card">
+          <h3>Trade Log</h3>
+          <ul id="trade-events" class="events-list">
+            <li>Waiting for trades...</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <script src="/static/config.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
