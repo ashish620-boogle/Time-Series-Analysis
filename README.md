@@ -351,3 +351,16 @@ Netlify steps (frontend only)
    ```
 2) Deploy to Netlify using the `static` folder as the publish directory.
 3) Open the Netlify URL; the dashboard will connect to Railway for `/api` and `/ws`.
+48) Render deployment (FastAPI backend)
+1) Push the repo to GitHub.
+2) In Render: New + -> Web Service -> select your repo.
+3) Render auto-detects Python; set Start Command:
+   ```bash
+   uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+   ```
+4) Set env vars (optional but recommended):
+   - `CORS_ORIGINS=https://your-netlify-site.netlify.app`
+5) Deploy and copy the Render URL (e.g., https://your-app.onrender.com).
+
+Optional Redis:
+- Provision a Redis instance in Render and set `REDIS_URL`.
